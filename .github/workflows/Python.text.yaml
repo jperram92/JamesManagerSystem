@@ -18,7 +18,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.11.8'  # Using more stable version
         cache: 'pip'
         
     - name: Install dependencies
@@ -27,10 +27,11 @@ jobs:
         pip install pytest pytest-mock streamlit pandas pytest-cov
         pip install -r requirements.txt
         
-    - name: Create directories
+    - name: Check directory structure
+      shell: pwsh
       run: |
-        mkdir -p tests
-        mkdir -p pages
+        if (!(Test-Path "tests")) { New-Item -ItemType Directory -Force -Path "tests" }
+        if (!(Test-Path "pages")) { New-Item -ItemType Directory -Force -Path "pages" }
         
     - name: Run tests
       run: |
