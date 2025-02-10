@@ -29,8 +29,8 @@ jobs:
         
     - name: Create directories
       run: |
-        if not exist "tests" mkdir tests
-        if not exist "pages" mkdir pages
+        if (-not (Test-Path "tests")) { New-Item -ItemType Directory -Path "tests" }
+        if (-not (Test-Path "pages")) { New-Item -ItemType Directory -Path "pages" }
         
     - name: Run tests
       run: |
