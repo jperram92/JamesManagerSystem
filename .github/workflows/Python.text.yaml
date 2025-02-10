@@ -36,16 +36,22 @@ jobs:
       run: |
         echo "=================== Running Tests ==================="
         python -m pytest tests/test_budgets.py -vv --cov=pages --cov-report=term-missing --cov-report=xml --junitxml=test-results.xml
-        
-        echo ""
-        echo "================= Coverage Summary ================="
-        coverage report --format=text --show-missing
-        
-        echo ""
-        echo "=================== Test Results ==================="
-        python -c "import xml.etree.ElementTree as ET; tree = ET.parse('test-results.xml'); print(f'Total Tests: {tree.getroot().attrib.get("tests")}'); print(f'Failures: {tree.getroot().attrib.get("failures")}'); print(f'Errors: {tree.getroot().attrib.get("errors")}'); print(f'Skipped: {tree.getroot().attrib.get("skipped")}')"
       continue-on-error: true
         
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Test Results
+        path: test-results.xml
+        reporter: java-junit
+        fail-on-error: false
+
+    - name: Generate Coverage Badge
+      uses: tj-actions/coverage-badge-py@v2
+      with:
+        output: coverage.svg
+
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v4
