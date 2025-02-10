@@ -18,7 +18,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11.8'  # Using more stable version
+        python-version: '3.12'
         cache: 'pip'
         
     - name: Install dependencies
@@ -27,15 +27,17 @@ jobs:
         pip install pytest pytest-mock streamlit pandas pytest-cov
         pip install -r requirements.txt
         
-    - name: Check directory structure
-      shell: pwsh
+    - name: Create directories
       run: |
-        if (!(Test-Path "tests")) { New-Item -ItemType Directory -Force -Path "tests" }
-        if (!(Test-Path "pages")) { New-Item -ItemType Directory -Force -Path "pages" }
+        mkdir -p tests
+        mkdir -p pages
         
     - name: Run tests
       run: |
-        python -m pytest tests/test_budgets.py -v --cov=pages --cov-report=xml
+        echo "Running Tests with Coverage Report..."
+        python -m pytest tests/test_budgets.py -vv --cov=pages --cov-report=term-missing --cov-report=xml --junitxml=test-results.xml
+        echo "=============== Coverage Report ==============="
+        coverage report --format=text
       continue-on-error: true
         
     - name: Upload test results
@@ -49,9 +51,17 @@ jobs:
         retention-days: 14
         if-no-files-found: warn
 
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: always()
+      with:
+        files: "test-results.xml"
+
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
+        flags: unittests
         fail_ci_if_error: false
         token: ${{ secrets.CODECOV_TOKEN }}
+        verbose: true
