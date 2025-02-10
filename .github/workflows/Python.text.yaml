@@ -29,15 +29,21 @@ jobs:
         
     - name: Create directories
       run: |
-        mkdir -p tests
-        mkdir -p pages
+        if not exist "tests" mkdir tests
+        if not exist "pages" mkdir pages
         
     - name: Run tests
       run: |
-        echo "Running Tests with Coverage Report..."
+        echo "=================== Running Tests ==================="
         python -m pytest tests/test_budgets.py -vv --cov=pages --cov-report=term-missing --cov-report=xml --junitxml=test-results.xml
-        echo "=============== Coverage Report ==============="
-        coverage report --format=text
+        
+        echo ""
+        echo "================= Coverage Summary ================="
+        coverage report --format=text --show-missing
+        
+        echo ""
+        echo "=================== Test Results ==================="
+        python -c "import xml.etree.ElementTree as ET; tree = ET.parse('test-results.xml'); print(f'Total Tests: {tree.getroot().attrib.get("tests")}'); print(f'Failures: {tree.getroot().attrib.get("failures")}'); print(f'Errors: {tree.getroot().attrib.get("errors")}'); print(f'Skipped: {tree.getroot().attrib.get("skipped")}')"
       continue-on-error: true
         
     - name: Upload test results
