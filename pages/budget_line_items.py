@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 
 def get_db_connection():
-    conn = sqlite3.connect('crm.db')
+    conn = sqlite3.connect(r'C:\Users\james\OneDrive\Desktop\JamesManagerSystem\crm.db')
     conn.row_factory = sqlite3.Row
     return conn
 

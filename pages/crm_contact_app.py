@@ -13,7 +13,7 @@ def is_valid_email(email):
 
 # Function to connect to the database
 def get_db_connection():
-    conn = sqlite3.connect('C:/Users/james/OneDrive/Desktop/James CRM/crm.db')
+    conn = sqlite3.connect(r'C:\Users\james\OneDrive\Desktop\JamesManagerSystem\crm.db')
     conn.row_factory = sqlite3.Row
     return conn
 
