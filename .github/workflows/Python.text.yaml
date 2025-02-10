@@ -31,22 +31,27 @@ jobs:
       run: |
         if (-not (Test-Path "tests")) { New-Item -ItemType Directory -Path "tests" }
         if (-not (Test-Path "pages")) { New-Item -ItemType Directory -Path "pages" }
+
+    - name: Create test database
+      run: |
+        python -c "import sqlite3; conn = sqlite3.connect('crm.db'); conn.close()"
         
     - name: Run tests with detailed output
       run: |
         echo "=================== Running Tests ==================="
+        $env:DATABASE_PATH = "crm.db"
         python -m pytest tests/test_budgets.py -vv --cov=pages --cov-report=term-missing --cov-report=xml --junitxml=test-results.xml
         
-        echo "`n================= Test Summary ==================="
-        Get-Content test-results.xml | Select-String "testsuite" | ForEach-Object {
-            $_ -match 'tests="(\d+)" failures="(\d+)" errors="(\d+)"' | Out-Null
-            Write-Host "Total Tests: $($Matches[1])"
-            Write-Host "Failures: $($Matches[2])"
-            Write-Host "Errors: $($Matches[3])"
+        if (Test-Path "test-results.xml") {
+            echo "`n================= Test Summary ==================="
+            $xml = [xml](Get-Content "test-results.xml")
+            Write-Host "Total Tests: $($xml.testsuites.tests)"
+            Write-Host "Failures: $($xml.testsuites.failures)"
+            Write-Host "Errors: $($xml.testsuites.errors)"
+            
+            echo "`n================= Coverage Report ================"
+            coverage report
         }
-        
-        echo "`n================= Coverage Report ================"
-        coverage report
       continue-on-error: true
         
     - name: Test Report
@@ -63,7 +68,7 @@ jobs:
       with:
         output: coverage.svg
 
-    - name: Upload test results
+    - name: Upload Artifacts
       if: always()
       uses: actions/upload-artifact@v4
       with:
@@ -72,6 +77,7 @@ jobs:
           test-results.xml
           coverage.xml
           .coverage
+          crm.db
         retention-days: 14
         if-no-files-found: warn
 
